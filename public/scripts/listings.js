@@ -131,7 +131,7 @@ const loadListings = function () {
 $(() => {
 
 
-  loadListings();
+  // loadListings();
 
   // BROWSE/SEARCH and Filter
 

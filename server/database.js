@@ -270,7 +270,7 @@ const getFavorites = (userID) => {
     .catch((err) => console.error(err));
 };
 
-const postFavorites = (user_id, listing_id) => {
+const favoriteToTrue = (user_id, listing_id) => {
   const isFavorite = true;
   return db.query(`INSERT INTO favorites (user_id, listing_id, favorited) VALUES (${user_id}, ${listing_id}, ${isFavorite})`)
     .then((result) => (result.rows))
@@ -320,5 +320,5 @@ module.exports = {
   deleteFromList,
   changeToSold,
   getFavorites,
-  postFavorites
+  favoriteToTrue
 };

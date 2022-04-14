@@ -1,5 +1,5 @@
 
-const createListingElement = function(listing) {
+const createListingElement = function (listing) {
 
   // Message Seller Button
   $('.messageButton').click(() => {
@@ -47,7 +47,7 @@ const createListingElement = function(listing) {
   return $listing;
 };
 
-const renderListing = function(listings) {
+const renderListing = function (listings) {
   listings.forEach(listing => {
     $('.listings').prepend(createListingElement(listing));
     if (listing.sold) {
@@ -80,45 +80,46 @@ const renderListing = function(listings) {
         $('.listingDelete').css('display', 'flex');
       });
     });
+  });
 
-    listingFavorite.forEach(listItem => {
-      const listingID = listItem.dataset.id;
-      listItem.addEventListener('click', (event) => {
-        event.preventDefault();
-        $.ajax({
-          url: `/api/favorites/${listingID}`,
-          method: 'POST',
-          data: $('.listings').serialize()
-        }).then((listings) => {
-          $('.listings').empty();
-          renderListing(listings);
-        });
-      });
-    });
-
-    listingSold.forEach(listItem => {
-      const listingID = listItem.dataset.id;
-      listItem.addEventListener('click', (event) => {
-        event.preventDefault();
-        $.ajax({
-          method: 'POST',
-          url: `/listing/sold/${listingID}`,
-          data: $('.listings').serialize()
-        }).then((listings) => {
-          $('.listings').empty();
-          renderListing(listings);
-          $('.messageButton').css('display', 'none');
-          $('.listingDelete').css('display', 'none');
-          $('.listingSold').css('display', 'flex');
-        });
+  listingFavorite.forEach(listItem => {
+    const listingID = listItem.dataset.id;
+    listItem.addEventListener('click', (event) => {
+      event.preventDefault();
+      $.ajax({
+        url: `/api/favorites/${listingID}`,
+        method: 'POST',
+        data: $('.listings').serialize()
+      }).then((listings) => {
+        $('.listings').empty();
+        renderListing(listings);
       });
     });
   });
+
+  listingSold.forEach(listItem => {
+    const listingID = listItem.dataset.id;
+    listItem.addEventListener('click', (event) => {
+      event.preventDefault();
+      $.ajax({
+        method: 'POST',
+        url: `/listing/sold/${listingID}`,
+        data: $('.listings').serialize()
+      }).then((listings) => {
+        $('.listings').empty();
+        renderListing(listings);
+        $('.messageButton').css('display', 'none');
+        $('.listingDelete').css('display', 'none');
+        $('.listingSold').css('display', 'flex');
+      });
+    });
+  });
+
 };
 
 
-const loadListings = function() {
-  $.ajax({ method: 'GET', url: '/listing' }).then(function(data) {
+const loadListings = function () {
+  $.ajax({ method: 'GET', url: '/listing' }).then(function (data) {
     $('.listingDelete').css('display', 'none');
     renderListing(data);
 
@@ -134,7 +135,7 @@ $(() => {
 
   // BROWSE/SEARCH and Filter
 
-  $('#carSearch').on('submit', function(event) {
+  $('#carSearch').on('submit', function (event) {
     $('.listingDelete').css('display', 'none');
     const data = $(this).serialize();
     event.preventDefault();
@@ -197,6 +198,20 @@ $(() => {
       $('.messageButton').css('display', 'none');
       $('.listingDelete').css('display', 'flex');
     });
+  });
+
+  // Favorites Button
+  $('.starButton').click(function (event) {
+    event.preventDefault();
+
+    $.ajax({
+      type: 'POST',
+      url: '/api/favorited/req.cookies.user_id',
+      data: 'data'
+    }).then((listings) => {
+      renderListing(listings);
+    })
+      .catch((err) => console.log(err.message));
   });
 });
 

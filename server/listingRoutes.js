@@ -65,6 +65,18 @@ router.get('/favorited', (req, res) => {
     });
 });
 
+router.post('/favorited/:listID', (req, res) => {
+  const id = req.cookies.user_id;
+  const listID = req.params.listID;
+  console.log('REQ:', req);
+  database.favoriteToTrue(listID, id)
+    .then(() => res.redirect('/listing/favorited'))
+    .catch(e => {
+      console.error(e);
+      res.send(e);
+    });
+});
+
 router.post('/users/:idUser/listings/:idListing/favorite', (req, res) => {
   const idUser = req.params.idUser;
   const idListing = req.params.idListing;
@@ -77,7 +89,6 @@ router.post('/delete/:listID', (req, res) => {
   database.deleteFromList(listID)
     .then(() => {
       res.redirect('/listing/soldlisting');
-
     })
     .catch(e => {
       console.error(e);

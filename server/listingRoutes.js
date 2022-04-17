@@ -1,15 +1,16 @@
+const e = require('express');
 const express = require('express');
 const router = express.Router();
 const database = require('./helper/database');
 
 
 router.get('', (req, res) => {
-  let id = 3;
+  let id = 1;
   if ( req.cookies.user_id) {
     id = req.cookies.user_id;
   }
 
-  database.getAllListings(id, 10)
+  database.getAllListings(id, 50)
     .then(listings => {
       res.send(listings);
     })
@@ -21,12 +22,13 @@ router.get('', (req, res) => {
 
 
 router.get('/browse', (req, res) => {
-  let id = 3;
+  let id = 1;
   if ( req.cookies.user_id) {
     id = req.cookies.user_id;
   }
   const data = req.query;
-  const filter = {
+
+  let filter = {
     search: data.search.toLowerCase(),
     carMake: data.carMake,
     transmission: data.transmission,
@@ -37,7 +39,9 @@ router.get('/browse', (req, res) => {
   };
 
   database.browseListings(filter, 50, id)
-    .then((listings) => res.send(listings))
+    .then((listings) => {
+      res.send(listings)
+    })
     .catch(e => {
       console.error(e);
       res.send(e);
@@ -46,10 +50,7 @@ router.get('/browse', (req, res) => {
 
 
 router.get('/mylisting', (req, res) => {
-  let id = 3;
-  if ( req.cookies.user_id) {
-    id = req.cookies.user_id;
-  }
+  let id = req.cookies.user_id;
 
   database.getMyListings(id)
     .then((listings) => res.send(listings))
@@ -61,10 +62,7 @@ router.get('/mylisting', (req, res) => {
 
 
 router.get('/soldlisting', (req, res) => {
-  let id = 3;
-  if ( req.cookies.user_id) {
-    id = req.cookies.user_id;
-  }
+  let id = req.cookies.user_id;
 
   database.getSoldListings(id)
     .then((listings) => res.send(listings))
@@ -76,14 +74,10 @@ router.get('/soldlisting', (req, res) => {
 
 
 router.get('/favorited', (req, res) => {
-  let id = 3;
-  if ( req.cookies.user_id) {
-    id = req.cookies.user_id;
-  }
+  let id = req.cookies.user_id;
 
   database.getFavorites(id)
     .then((favorites) => {
-      console.log(favorites);
       res.send(favorites)
     })
     .catch(e => {
@@ -94,28 +88,29 @@ router.get('/favorited', (req, res) => {
 
 
 router.post('/favoritesTrue/:listID', (req, res) => {
-  let id = 3;
-  if ( req.cookies.user_id) {
-    id = req.cookies.user_id;
+  let id = req.cookies.user_id;
+
+  if (!id) {
+    res.sendStatus(403);
+    return;
   }
 
   const listID = req.params.listID;
 
   database.postFavoritesTrue(id, listID)
-    .then(() => res.redirect('/listing'));
+    .then((data) => res.send(data))
+    .catch(e => console.error(e));
 });
 
 
 router.post('/favoritesFalse/:listID', (req, res) => {
-  let id = 3;
-  if ( req.cookies.user_id) {
-    id = req.cookies.user_id;
-  }
+  let id = req.cookies.user_id;
 
   const listID = req.params.listID;
 
-  database.postFavoritesFalse(id, listID)
-    .then(() => res.redirect('/listing'));
+  database.deleteFromTable(id, listID)
+    .then(() => res.redirect('/listing/favorited'))
+    .catch(e => console.error(e));
 });
 
 
@@ -157,17 +152,13 @@ router.post('', (req, res) => {
     return;
   }
 
-  let id = 3;
-  if (req.cookies.user_id) {
-    id = req.cookies.user_id;
-  }
+  let id = req.cookies.user_id;
 
   database.createListing(id, req.body)
-    .then(() => {
-      console.log(req.body, "\nListing Added to Databse");
-      res.status(201);
+    .then((listing) => {
+      console.log(req.body, "\nListing Added to Database");
       console.log('New Listing Created!');
-      res.redirect('/');
+      res.redirect('listing/mylisting');
     })
     .catch(e => {
       console.error(e);

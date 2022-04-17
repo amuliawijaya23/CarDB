@@ -3,7 +3,10 @@ const createListingElement = listing => {
   let $listing = `
   <div id='listing${listing.id}' class="posts">
     <img src='${listing.imageurl}' class="carPhoto" />
-    <button class='starButton submitListingStar star${listing.id}' data-id='${listing.id}' type="button">
+    <button id="starButton${listing.id}" class='starButton submitListingStar star${listing.id}' data-id='${listing.id}' type="button">
+      <i class="star fa-solid fa-star"></i>
+    </button>
+    <button id="starRemoveButton${listing.id}" class='starRemoveButton submitRemoveListingStar starRemove${listing.id}' data-id='${listing.id}' type="button">
       <i class="star fa-solid fa-star"></i>
     </button>
     <div class="postBox">
@@ -14,10 +17,13 @@ const createListingElement = listing => {
       <div class='messageButtonContainer'>
         <div class="postInfo">
           <div>
-            <b><p style="color: ${listing.color}"> ${listing.color}</p></b>
+            <b><p> Color: ${listing.color}</p></b>
           </div>
           <div>
             ${listing.transmission ?  '<b>M/T</b>' : '<b>A/T</b>'}
+          </div>
+          <div>
+            <b>${listing.odometer} KM</b>
           </div>
         </div>
         <div class="contact">
@@ -56,6 +62,7 @@ const createListingElement = listing => {
 
 // Renders listings onto the DOM
 const renderListing = listings => {
+  // console.log(listings);
   listings.forEach(listing => {
     $('.listings').prepend(createListingElement(listing));
     if (listing.sold) {
@@ -73,6 +80,7 @@ const renderListing = listings => {
   const listingSold = [...document.querySelectorAll('.submitListingSold')];
   const listingDelete = [...document.querySelectorAll('.submitListingDelete')];
   const listingFavorite = [...document.querySelectorAll('.submitListingStar')];
+  const listingRemoveFavorite = [...document.querySelectorAll('.submitRemoveListingStar')];
 
 
   // Creates click event listener for each injected delete button
@@ -99,27 +107,31 @@ const renderListing = listings => {
     const listingID = listItem.dataset.id;
     listItem.addEventListener('click', event => {
       event.preventDefault();
-      $(`.star${listingID}`).toggleClass('favoriteTrue');
 
-      if ($(`.star${listingID}`).hasClass('favoriteTrue')) {
-
-        $.ajax({
-          url: `/listing/favoritesTrue/${listingID}`,
-          method: 'POST',
-          data: $('.listings').serialize()
-        }).then(() => $('.sold').css('display', 'none'));
-
-      } else {
-
-        $.ajax({
-          url: `/listing/favoritesFalse/${listingID}`,
-          method: 'POST',
-          data: $('.favorites').serialize()
-        }).then(() => $('.sold').css('display', 'none'));
-
-      }
+      $.ajax({
+        url: `/listing/favoritesTrue/${listingID}`,
+        method: 'POST',
+      }).then(() => {
+        $(`#starButton${listingID}`).hide();
+        $(`#starRemoveButton${listingID}`).css('display', 'contents');
+      }).catch(e => console.error(e));
     });
   });
+
+  listingRemoveFavorite.forEach(listItem => {
+    const listingID = listItem.dataset.id;
+    listItem.addEventListener('click', event => {
+      event.preventDefault();
+
+      $.ajax({
+        url: `/listing/favoritesFalse/${listingID}`,
+        method: 'POST'
+      }).then((listings) => {
+        $(`#starRemoveButton${listingID}`).hide();
+        $(`#starButton${listingID}`).show()
+      }).catch(err => console.error(err));
+    })
+  })
 
 
   // Creates click event listener for each injected sold button
@@ -152,20 +164,16 @@ const renderListing = listings => {
       event.preventDefault();
 
 
+
       $.ajax({
         method: 'POST',
         url: `/api/messages/new/${listingID}`
-      }).then(() => {
-
-        $.ajax({
-          method: 'GET',
-          url: '/api/messages'
-        }).then(data => {
-          $('.inbox').empty();
-          renderMails(data);
-          $('.inbox').fadeIn('slow');
-        }).catch(err => console.error(err.message));
-      });
+      }).then(data => {
+        $('.inbox').empty();
+        $('.inbox').fadeToggle('slow');
+        $('.chatFeed').show();
+        renderMails(data);
+      }).catch(err => console.error(err.message));
     });
   });
 };
@@ -187,6 +195,7 @@ $(() => {
 
   // BROWSE/SEARCH and Filter buttons
   $('#carSearch').on('submit', function(event) {
+    // $('.filterOptions').slideUp('slow');
     $('.listingDelete').css('display', 'none');
     const data = $(this).serialize();
     event.preventDefault();
@@ -204,6 +213,8 @@ $(() => {
   // My Listings nav button
   $('#listings').click(event => {
     $('.listingDelete').css('display', 'none');
+    $('.newForm').slideUp('slow');
+    $('.filterOptions').slideUp('slow');
     event.preventDefault();
 
     $.ajax({
@@ -220,6 +231,8 @@ $(() => {
 
   // My Favorites nav button
   $('#favorites').click(event => {
+    $('.newForm').slideUp('slow');
+    $('.filterOptions').slideUp('slow');
     event.preventDefault();
 
     $.ajax({
@@ -233,12 +246,15 @@ $(() => {
       $('.messageButton').css('color', 'black');
       $('.listingDelete').css('display', 'none');
       $('.listingSold').css('display', 'none');
-      $('.starButton').css('color', 'red');
+      $('.starButton').hide();
+      $('.starRemoveButton').css('display', 'contents');
     });
   });
 
   // My Sold nav button
   $('#sold').click(event => {
+    $('.newForm').slideUp('slow');
+    $('.filterOptions').slideUp('slow');
     event.preventDefault();
 
     $.ajax({

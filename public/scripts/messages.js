@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 const createMails = mail => {
   let $mail = $('<div class="message">');
   let $message = $(`<form class="mail" action="/api/messages/${mail.id}" method="GET">`);
@@ -21,13 +22,10 @@ const createChatBox = inbox => {
   <div class="chatInput">
     <form id="messageText" method:"POST" action="/api/messages/${inbox}">
       <div class='inputBox'>
-        <textarea class="chatText" name="text" placeholder="Send a message...">
-        </textarea>
+        <textarea rows:"1" col:"50" wrap:"hard" class="chatText" name="text" placeholder="Send a message..."></textarea>
       </div>
       <div class="sendButton">
-        <button class="${inbox} chatSend" type="submit" data-id="${inbox}">
-          Send
-        </button>
+        <button class="${inbox} chatSend" type="submit" data-id="${inbox}">Send</button>
       </div>
     </form>
   </div>
@@ -124,7 +122,7 @@ const renderChat = inbox => {
 
   $('.chatText').blur(event => {
     $('.chatBox').hide();
-  })
+  });
 };
 
 // Messages inbox dropdown
